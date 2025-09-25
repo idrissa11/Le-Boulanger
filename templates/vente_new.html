@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Nouvelle vente</h2>
+
+<form action="{{ url_for('ventes_nouvelle') }}" method="post" id="venteForm">
+  <div>
+    Client :
+    <select name="client_id">
+      <option value="">— (comptoir / sans fiche) —</option>
+      {% for c in clients %}
+      <option value="{{ c.id }}">{{ c.nom }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label>Mode de paiement <input name="mode_paiement" placeholder="espèces, mobile money, virement…"></label>
+    <label>Acompte <input name="acompte" type="number" step="0.01" value="0"></label>
+  </div>
+
+  <h3>Lignes</h3>
+  <table id="lignesTable">
+    <thead>
+      <tr><th>Produit</th><th>Qté</th><th>PU</th><th>Rem. %</th><th></th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <select name="produit_id[]" onchange="majPU(this)">
+            <option value="">— choisir —</option>
+            {% for p in produits %}
+            <option value="{{ p.id }}" data-pu="{{ '%.2f'|format(p.prix_vente) }}" data-stock="{{ p.quantite }}">
+              {{ p.nom }} (stock: {{ p.quantite }})
+            </option>
+            {% endfor %}
+          </select>
+        </td>
+        <td><input name="qte[]" type="number" step="1" min="1" value="1"></td>
+        <td><input name="pu[]" type="number" step="0.01" value="0"></td>
+        <td><input name="remise_pct[]" type="number" step="0.1" value="0"></td>
+        <td><button type="button" onclick="supprimerLigne(this)">🗑️</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><button type="button" onclick="ajouterLigne()">➕ Ajouter une ligne</button></p>
+  <p><button type="submit">Enregistrer</button> <a href="{{ url_for('ventes_list') }}">Annuler</a></p>
+</form>
+
+<script>
+function majPU(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  const tr = sel.closest('tr');
+  const puInput = tr.querySelector('input[name="pu[]"]');
+  if (opt && opt.dataset.pu) puInput.value = opt.dataset.pu;
+}
+function supprimerLigne(btn) {
+  const tbody = document.querySelector('#lignesTable tbody');
+  if (tbody.rows.length > 1) btn.closest('tr').remove();
+}
+function ajouterLigne() {
+  const tbody = document.querySelector('#lignesTable tbody');
+  const tr0 = tbody.rows[0];
+  const clone = tr0.cloneNode(true);
+  clone.querySelector('select[name="produit_id[]"]').selectedIndex = 0;
+  clone.querySelector('input[name="qte[]"]').value = 1;
+  clone.querySelector('input[name="pu[]"]').value = 0;
+  clone.querySelector('input[name="remise_pct[]"]').value = 0;
+  tbody.appendChild(clone);
+}
+</script>
+{% endblock %}
+

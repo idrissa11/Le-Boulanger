@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Modifier client #{{ client.id }}</h2>
+<div class="card card-body">
+  <form action="{{ url_for('clients_modifier', client_id=client.id) }}" method="post" class="row g-3">
+    <div class="col-md-4"><label class="form-label">Nom*</label><input class="form-control" name="nom" value="{{ client.nom }}" required></div>
+    <div class="col-md-4"><label class="form-label">Téléphone</label><input class="form-control" name="telephone" value="{{ client.telephone }}"></div>
+    <div class="col-md-4"><label class="form-label">Email</label><input class="form-control" type="email" name="email" value="{{ client.email }}"></div>
+    <div class="col-md-4"><label class="form-label">Entreprise</label><input class="form-control" name="entreprise" value="{{ client.entreprise }}"></div>
+    <div class="col-md-4"><label class="form-label">Adresse</label><input class="form-control" name="adresse" value="{{ client.adresse }}"></div>
+    <div class="col-md-4"><label class="form-label">Ville</label><input class="form-control" name="ville" value="{{ client.ville }}"></div>
+    <div class="col-12">
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+      <a class="btn btn-light" href="{{ url_for('clients_list') }}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+
+ 

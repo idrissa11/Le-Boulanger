@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Détail vente #{{ vente.id }}</h2>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h5 class="card-title">Infos client</h5>
+      <p class="mb-1"><strong>Client :</strong> {{ vente.client_nom or 'Comptoir' }}</p>
+      {% if vente.entreprise %}<p class="mb-1"><strong>Entreprise :</strong> {{ vente.entreprise }}</p>{% endif %}
+      <p class="mb-1"><strong>Tél :</strong> {{ vente.telephone or '—' }} | <strong>Email :</strong> {{ vente.email or '—' }}</p>
+      <p class="mb-0"><strong>Adresse :</strong> {{ vente.adresse or '—' }} {{ vente.ville or '' }}</p>
+    </div></div>
+  </div>
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h5 class="card-title">Récapitulatif</h5>
+      <p class="mb-1">Date : {{ vente.date }}</p>
+      <p class="mb-1">TVA : {{ tva_rate }}%</p>
+      <p class="mb-1">Total HT : {{ '%.2f'|format(vente.total_ht) }}</p>
+      <p class="mb-1">TVA : {{ '%.2f'|format(vente.tva) }}</p>
+      <p class="mb-0"><strong>Total TTC : {{ '%.2f'|format(vente.total_ttc) }}</strong></p>
+    </div></div>
+  </div>
+</div>
+
+<div class="table-responsive">
+<table class="table table-striped align-middle">
+  <thead class="table-light"><tr><th>Désignation</th><th>Réf</th><th class="text-end">PU</th><th class="text-end">Qté</th><th class="text-end">Rem. %</th><th class="text-end">Sous-total</th></tr></thead>
+  <tbody>
+  {% for lg in lignes %}
+    {% set st = lg.prix_unitaire * lg.quantite * (1 - (lg.remise_pct or 0)/100) %}
+    <tr>
+      <td>{{ lg.produit_nom }}</td>
+      <td>{{ lg.reference or '—' }}</td>
+      <td class="text-end">{{ '%.2f'|format(lg.prix_unitaire) }}</td>
+      <td class="text-end">{{ lg.quantite }}</td>
+      <td class="text-end">{{ '%.1f'|format(lg.remise_pct or 0) }}</td>
+      <td class="text-end">{{ '%.2f'|format(st) }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<p>
+  <a class="btn btn-outline-secondary" href="{{ url_for('facture_pdf', vente_id=vente.id) }}">🧾 Télécharger la facture (PDF)</a>
+  <a class="btn btn-light" href="{{ url_for('ventes_list') }}">← Retour aux ventes</a>
+</p>
+{% endblock %}
+

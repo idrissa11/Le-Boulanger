@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Outils administrateur</h2>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Sauvegarde / Restauration</h5>
+        <p><a class="btn btn-outline-primary" href="{{ url_for('admin_backup') }}">⬇️ Télécharger la base</a></p>
+        <form action="{{ url_for('admin_restore') }}" method="post" enctype="multipart/form-data"
+              onsubmit="return confirm('Remplacer la base actuelle par ce fichier ? Une copie .old sera conservée.');">
+          <div class="mb-2">
+            <label class="form-label">Restaurer depuis une base SQLite (.db)</label>
+            <input class="form-control" type="file" name="dbfile" accept=".db,.sqlite">
+          </div>
+          <button class="btn btn-danger">Restaurer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Import produits (CSV / Excel)</h5>
+        <p class="text-muted small mb-2">
+          Colonnes recommandées : <code>nom, reference, categorie, marque, prix_achat, prix_vente, quantite, numero_serie, garantie_mois</code>
+        </p>
+        <form action="{{ url_for('admin_import_produits') }}" method="post" enctype="multipart/form-data">
+          <div class="mb-2">
+            <label class="form-label">Fichier</label>
+            <input class="form-control" type="file" name="file" accept=".csv,.xlsx" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Mode</label>
+            <select class="form-select" name="mode">
+              <option value="upsert" selected>Mettre à jour si même référence (UPsert)</option>
+              <option value="insert">Ajouter uniquement (ignorer doublons)</option>
+            </select>
+          </div>
+          <button class="btn btn-primary">Importer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

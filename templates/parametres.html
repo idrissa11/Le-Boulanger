@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Paramètres société</h2>
+<div class="card card-body">
+  <form method="post" class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Nom de la société</label>
+      <input class="form-control" name="societe" value="{{ st.societe if st else '' }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">TVA (%)</label>
+      <input class="form-control" name="tva_rate" type="number" step="0.01" value="{{ (st.tva_rate*100)|round(2) if st and st.tva_rate is not none else 18 }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Adresse</label>
+      <input class="form-control" name="adresse" value="{{ st.adresse if st else '' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Téléphone</label>
+      <input class="form-control" name="telephone" value="{{ st.telephone if st else '' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Email</label>
+      <input class="form-control" type="email" name="email" value="{{ st.email if st else '' }}">
+    </div>
+    <div class="col-12">
+      <button class="btn btn-primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

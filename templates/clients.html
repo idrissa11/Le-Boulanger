@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block content %}
+{# En-tête: Titre + Actions + Filtres #}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="m-0">Clients</h2>
+  <div class="d-flex align-items-center gap-2">
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        ⚙️ Actions
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="{{ url_for('export_clients_csv') }}">⬇️ Exporter les clients (CSV)</a></li>
+      </ul>
+    </div>
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersClients">
+      🔎 Filtres
+    </button>
+  </div>
+</div>
+
+{# Filtres repliables #}
+{% set filter_active = q %}
+<div class="collapse {% if filter_active %}show{% endif %}" id="filtersClients">
+  <div class="card card-body mb-3">
+    <form method="get" class="row g-2">
+      <div class="col-sm-8 col-md-6">
+        <input class="form-control" name="q" placeholder="Nom, tél., email, entreprise, ville" value="{{ q or '' }}">
+      </div>
+      <div class="col-auto"><button class="btn btn-primary" type="submit">Appliquer</button></div>
+      <div class="col-auto"><a class="btn btn-light" href="{{ url_for('clients_list') }}">Réinitialiser</a></div>
+    </form>
+  </div>
+</div>
+
+
+<p><button class="btn btn-success" type="button" data-bs-toggle="collapse" data-bs-target="#formClient">➕ Ajouter un client</button></p>
+
+<div class="collapse" id="formClient">
+  <div class="card card-body mb-3">
+    <form action="{{ url_for('clients_ajouter') }}" method="post" class="row g-3">
+      <div class="col-md-4"><label class="form-label">Nom*</label><input class="form-control" name="nom" required></div>
+      <div class="col-md-4"><label class="form-label">Téléphone</label><input class="form-control" name="telephone"></div>
+      <div class="col-md-4"><label class="form-label">Email</label><input class="form-control" type="email" name="email"></div>
+      <div class="col-md-4"><label class="form-label">Entreprise</label><input class="form-control" name="entreprise"></div>
+      <div class="col-md-4"><label class="form-label">Adresse</label><input class="form-control" name="adresse"></div>
+      <div class="col-md-4"><label class="form-label">Ville</label><input class="form-control" name="ville"></div>
+      <div class="col-12"><button class="btn btn-primary" type="submit">Enregistrer</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="table-responsive">
+<table class="table table-striped table-hover align-middle">
+  <thead class="table-light">
+    <tr><th>#</th><th>Nom</th><th>Téléphone</th><th>Email</th><th>Entreprise</th><th>Adresse</th><th>Ville</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for c in clients %}
+    <tr>
+      <td>{{ c.id }}</td><td>{{ c.nom }}</td><td>{{ c.telephone }}</td><td>{{ c.email }}</td>
+      <td>{{ c.entreprise }}</td><td>{{ c.adresse }}</td><td>{{ c.ville }}</td>
+      <td class="text-end">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('clients_modifier', client_id=c.id) }}">✏️</a>
+        <form action="{{ url_for('clients_supprimer', client_id=c.id) }}" method="post" class="d-inline" onsubmit="return confirm('Supprimer ?');">
+          <button class="btn btn-sm btn-outline-danger">🗑️</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
+
+
+

@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2 class="mb-3">Tableau de bord</h2>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Chiffre d’affaires (6–7 derniers mois)</h5>
+        <canvas id="caChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Top 5 produits (quantités)</h5>
+        <canvas id="topChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-body">
+    <h5 class="card-title">Stocks faibles (≤ 2)</h5>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped align-middle">
+        <thead class="table-light"><tr><th>#</th><th>Nom</th><th>Référence</th><th class="text-end">Qté</th></tr></thead>
+        <tbody>
+          {% for r in low_rows %}
+          <tr><td>{{ r.id }}</td><td>{{ r.nom }}</td><td>{{ r.reference or '—' }}</td><td class="text-end">{{ r.quantite }}</td></tr>
+          {% endfor %}
+          {% if not low_rows %}<tr><td colspan="4" class="text-center text-muted">Rien à signaler</td></tr>{% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const caCtx = document.getElementById('caChart');
+new Chart(caCtx, {
+  type: 'line',
+  data: {
+    labels: {{ labels|tojson }},
+    datasets: [{ label: 'CA (TTC)', data: {{ data_ca|tojson }}, tension: 0.2 }]
+  }
+});
+const topCtx = document.getElementById('topChart');
+new Chart(topCtx, {
+  type: 'bar',
+  data: {
+    labels: {{ top_labels|tojson }},
+    datasets: [{ label: 'Quantité vendue', data: {{ top_values|tojson }} }]
+  },
+  options: { indexAxis: 'y' }
+});
+</script>
+{% endblock %}
