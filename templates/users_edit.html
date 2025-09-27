@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+  {% if user %}
+    <h2>Modifier l'utilisateur #{{ user.id }}</h2>
+  {% else %}
+    <h2>Nouvel utilisateur</h2>
+  {% endif %}
+
+  <div class="card card-body mt-3">
+    <form method="post" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Nom d'utilisateur</label>
+        <input class="form-control" name="username" value="{{ user.username if user else '' }}" required {% if user %}disabled{% endif %}>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Rôle</label>
+        <select class="form-select" name="role">
+          <option value="vendeur" {% if user and user.role == 'vendeur' %}selected{% endif %}>Vendeur</option>
+          <option value="admin" {% if user and user.role == 'admin' %}selected{% endif %}>Admin</option>
+          <option value="owner" {% if user and user.role == 'owner' %}selected{% endif %}>Propriétaire</option>
+        </select>
+      </div>
+      {% if not user %}
+      <div class="col-md-6">
+        <label class="form-label">Mot de passe</label>
+        <input class="form-control" type="password" name="password" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Confirmer le mot de passe</label>
+        <input class="form-control" type="password" name="password2" required>
+      </div>
+      {% endif %}
+      <div class="col-12">
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+        <a href="{{ url_for('users_list') }}" class="btn btn-light">Annuler</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

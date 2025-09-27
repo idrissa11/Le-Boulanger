@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+{% block title %}Stock{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Stock <span class="badge bg-secondary">{{ total }}</span></h1>
+    <div>
+        <a href="{{ url_for('export_produits_csv') }}" class="btn btn-sm btn-outline-secondary">Exporter CSV</a>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAjoutProduit">
+            Ajouter un produit
+        </button>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" action="{{ url_for('stock_list') }}" class="row g-3 align-items-center">
+            <div class="col-md">
+                <input type="search" name="q" class="form-control" placeholder="Rechercher par nom, réf, catégorie..." value="{{ q or '' }}">
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="min_qte" class="form-control" placeholder="Qté min" value="{{ min_qte or '' }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-secondary">Filtrer</button>
+                <a href="{{ url_for('stock_list') }}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Référence</th>
+                <th>Catégorie</th>
+                <th>Marque</th>
+                {% if not hide_prix_achat %}
+                <th class="text-end">Prix Achat</th>
+                {% endif %}
+                <th class="text-end">Prix Vente</th>
+                <th class="text-end">Quantité</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in produits %}
+            <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.nom }}</td>
+                <td>{{ p.reference }}</td>
+                <td>{{ p.categorie }}</td>
+                <td>{{ p.marque }}</td>
+                {% if not hide_prix_achat %}
+                <td class="text-end">{{ "%.2f"|format(p.prix_achat) }}</td>
+                {% endif %}
+                <td class="text-end">{{ "%.2f"|format(p.prix_vente) }}</td>
+                <td class="text-end">{{ p.quantite }}</td>
+                <td class="text-end">
+                    {% if session.user.role in ['owner','admin'] %}
+                    <form action="{{ url_for('produits_supprimer', pid=p.id) }}" method="post" onsubmit="return confirm('Sûr ?');" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" class="text-center">Aucun produit trouvé.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Ajout -->
+<div class="modal fade" id="modalAjoutProduit" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('produits_ajouter') }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un produit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3"><input type="text" name="nom" class="form-control" placeholder="Nom du produit" required></div>
+                    <div class="mb-3"><input type="text" name="reference" class="form-control" placeholder="Référence"></div>
+                    <div class="mb-3"><input type="text" name="categorie" class="form-control" placeholder="Catégorie"></div>
+                    <div class="mb-3"><input type="text" name="marque" class="form-control" placeholder="Marque"></div>
+                    <div class="row">
+                        {% if not hide_prix_achat %}
+                        <div class="col"><input type="number" step="0.01" name="prix_achat" class="form-control" placeholder="Prix achat"></div>
+                        {% endif %}
+                        <div class="col"><input type="number" step="0.01" name="prix_vente" class="form-control" placeholder="Prix vente"></div>
+                        <div class="col"><input type="number" name="quantite" class="form-control" placeholder="Quantité"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col"><input type="text" name="numero_serie" class="form-control" placeholder="N° de série"></div>
+                        <div class="col"><input type="number" name="garantie_mois" class="form-control" placeholder="Garantie (mois)"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

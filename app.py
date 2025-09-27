@@ -17,6 +17,8 @@ DB_PATH = "materiel.db"
 app = Flask(__name__)
 app.secret_key = "dev-change-this"  # à personnaliser
 
+
+
 # ---------------- Schéma DB ----------------
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -323,7 +325,19 @@ def change_password():
 # app.py — Partie 2 : Stock & Clients
 # -------- STOCK --------
 @app.route("/")
+@login_required
 def index():
+    # La page d'accueil est maintenant la route /accueil
+    return redirect(url_for('accueil'))
+
+@app.route("/accueil")
+@login_required
+def accueil():
+    return render_template("accueil.html")
+
+@app.route("/stock")
+@login_required
+def stock_list():
     q = request.args.get("q", "").strip()
     min_qte = request.args.get("min_qte", "").strip()
     conn = get_db()
@@ -339,21 +353,9 @@ def index():
     count = conn.execute("SELECT COUNT(*) AS n FROM ("+sql+")", params).fetchone()["n"]
     produits = conn.execute(sql + " LIMIT ? OFFSET ?", params+[per_page, offset]).fetchall()
     is_vendor = session.get('user',{}).get('role') == 'vendeur'
-    return render_template("index.html", produits=produits, q=q, min_qte=min_qte,
+    return render_template("stock.html", produits=produits, q=q, min_qte=min_qte,
                            page=page, per_page=per_page, total=count,
                            hide_prix_achat=is_vendor)
-
-@app.route("/accueil")
-@login_required
-def accueil():
-    return render_template("accueil.html")
-
-@app.route("/stock")
-@login_required
-def stock_list():
-    # Cette route est maintenant la même que l'index, on peut simplement rediriger.
-    # Ou copier/coller le code de la fonction index() ici si on veut une logique différente plus tard.
-    return redirect(url_for('index'))
 
 @app.route("/produits/ajouter", methods=["POST"])
 @login_required
@@ -1202,4 +1204,4 @@ def users_delete(uid):
 # -------- Run --------
 if __name__ == "__main__":
     ensure_schema()
-    app.run(debug=True)
+    app.run(port=8000, debug=True) # app.run(port=8000)
