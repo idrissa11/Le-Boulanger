@@ -57,6 +57,7 @@
     <tr>
       <td>{{ f.id }}</td><td>{{ f.nom }}</td><td>{{ f.contact }}</td><td>{{ f.telephone }}</td><td>{{ f.email }}</td><td>{{ f.adresse }}</td><td>{{ f.ville }}</td>
       <td class="text-end">
+        <a href="{{ url_for('fournisseurs_modifier', fid=f.id) }}" class="btn btn-sm btn-outline-primary">✏️</a>
         <form action="{{ url_for('fournisseurs_supprimer', fid=f.id) }}" method="post" class="d-inline" onsubmit="return confirm('Supprimer ?');">
           <button class="btn btn-sm btn-outline-danger">🗑️</button>
         </form>

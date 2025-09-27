@@ -343,13 +343,25 @@ def index():
                            page=page, per_page=per_page, total=count,
                            hide_prix_achat=is_vendor)
 
+@app.route("/accueil")
+@login_required
+def accueil():
+    return render_template("accueil.html")
+
+@app.route("/stock")
+@login_required
+def stock_list():
+    # Cette route est maintenant la même que l'index, on peut simplement rediriger.
+    # Ou copier/coller le code de la fonction index() ici si on veut une logique différente plus tard.
+    return redirect(url_for('index'))
+
 @app.route("/produits/ajouter", methods=["POST"])
 @login_required
 def produits_ajouter():
     nom = (request.form.get("nom") or "").strip()
     if not nom:
         flash("Le nom du produit est obligatoire.", "danger")
-        return redirect(url_for("index"))
+        return redirect(url_for("stock_list"))
     reference = (request.form.get("reference") or "").strip()
     categorie = (request.form.get("categorie") or "").strip()
     marque = (request.form.get("marque") or "").strip()
@@ -372,7 +384,7 @@ def produits_ajouter():
         flash("Produit ajouté.", "success")
     except sqlite3.IntegrityError as e:
         flash(f"Erreur (référence en double ?) : {e}", "danger")
-    return redirect(url_for("index"))
+    return redirect(url_for("stock_list"))
 
 @app.route("/produits/<int:pid>/supprimer", methods=["POST"])
 @role_required('owner','admin')
@@ -381,7 +393,7 @@ def produits_supprimer(pid):
     conn.execute("DELETE FROM produits WHERE id = ?", (pid,))
     conn.commit()
     flash("Produit supprimé.", "success")
-    return redirect(url_for("index"))
+    return redirect(url_for("stock_list"))
 
 # -------- CLIENTS --------
 @app.route("/clients")
@@ -684,6 +696,32 @@ def fournisseurs_ajouter():
     flash("Fournisseur ajouté.", "success")
     return redirect(url_for("fournisseurs_list"))
 
+@app.route("/fournisseurs/<int:fid>/modifier", methods=["GET","POST"])
+@login_required
+def fournisseurs_modifier(fid):
+    conn = get_db()
+    if request.method == "GET":
+        fournisseur = conn.execute("SELECT * FROM fournisseurs WHERE id = ?", (fid,)).fetchone()
+        if not fournisseur: abort(404)
+        return render_template("fournisseurs_edit.html", fournisseur=fournisseur)
+
+    nom = (request.form.get("nom") or "").strip()
+    contact = (request.form.get("contact") or "").strip()
+    telephone = (request.form.get("telephone") or "").strip()
+    email = (request.form.get("email") or "").strip()
+    adresse = (request.form.get("adresse") or "").strip()
+    ville = (request.form.get("ville") or "").strip()
+    if not nom:
+        flash("Le nom du fournisseur est obligatoire.", "danger")
+        return redirect(url_for("fournisseurs_modifier", fid=fid))
+    conn.execute("""
+        UPDATE fournisseurs SET nom=?, contact=?, telephone=?, email=?, adresse=?, ville=?
+        WHERE id=?
+    """, (nom, contact, telephone, email, adresse, ville, fid))
+    conn.commit()
+    flash("Fournisseur modifié.", "success")
+    return redirect(url_for("fournisseurs_list"))
+
 @app.route("/fournisseurs/<int:fid>/supprimer", methods=["POST"])
 @role_required('owner','admin')
 def fournisseurs_supprimer(fid):
@@ -773,6 +811,28 @@ def achats_ajouter():
         conn.execute("COMMIT"); flash(f"Achat #{achat_id} enregistré (TTC {total_ttc}).", "success")
     except Exception as e:
         conn.execute("ROLLBACK"); flash(f"Erreur lors de l'enregistrement de l'achat: {e}", "danger")
+    return redirect(url_for("achats_list"))
+
+@app.route("/achats/<int:achat_id>/annuler", methods=["POST"])
+@role_required('owner','admin')
+def achat_annuler(achat_id):
+    conn = get_db()
+    try:
+        conn.isolation_level = None; conn.execute("BEGIN")
+        achat = conn.execute("SELECT id, statut FROM achats WHERE id = ?", (achat_id,)).fetchone()
+        if not achat: raise ValueError("Achat introuvable.")
+        if achat["statut"] == "annulé": raise ValueError("Cet achat est déjà annulé.")
+
+        lignes = conn.execute("SELECT la.produit_id, la.quantite, p.nom, p.quantite AS stock_actuel FROM lignes_achat la JOIN produits p ON p.id = la.produit_id WHERE la.achat_id = ?", (achat_id,)).fetchall()
+        for lg in lignes:
+            if lg["stock_actuel"] < lg["quantite"]:
+                raise ValueError(f"Stock insuffisant pour '{lg['nom']}' pour annuler (stock: {lg['stock_actuel']}, achat: {lg['quantite']}).")
+            conn.execute("UPDATE produits SET quantite = quantite - ? WHERE id = ?", (lg["quantite"], lg["produit_id"]))
+
+        conn.execute("UPDATE achats SET statut='annulé', total_ht=0, tva=0, total_ttc=0 WHERE id=?", (achat_id,))
+        conn.execute("COMMIT"); flash(f"Achat #{achat_id} annulé et stock mis à jour.", "success")
+    except Exception as e:
+        conn.execute("ROLLBACK"); flash(f"Échec de l'annulation: {e}", "danger")
     return redirect(url_for("achats_list"))
 
 # app.py — Partie 5 : Paramètres, Dashboard, Exports, Admin, Utilisateurs
@@ -872,6 +932,21 @@ def export_clients_csv():
     return Response(generate(), mimetype="text/csv",
                     headers={"Content-Disposition": "attachment; filename=clients.csv"})
 
+@app.route("/export/fournisseurs.csv")
+def export_fournisseurs_csv():
+    conn = get_db()
+    rows = conn.execute("""SELECT id, nom, contact, telephone, email, adresse, ville
+                           FROM fournisseurs ORDER BY nom""").fetchall()
+    def generate():
+        s = io.StringIO(); w = csv.writer(s)
+        w.writerow(["id","nom","contact","telephone","email","adresse","ville"])
+        yield s.getvalue(); s.seek(0); s.truncate(0)
+        for r in rows:
+            w.writerow([r["id"], r["nom"], r["contact"], r["telephone"], r["email"], r["adresse"], r["ville"]])
+            yield s.getvalue(); s.seek(0); s.truncate(0)
+    return Response(generate(), mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=fournisseurs.csv"})
+
 @app.route("/export/ventes.csv")
 def export_ventes_csv():
     q = (request.args.get("q") or "").strip()
@@ -969,7 +1044,7 @@ def admin_restore():
         os.replace(DB_PATH, DB_PATH + ".old")
     os.replace(tmp.name, DB_PATH)
     flash("Base restaurée. (Copie .old conservée)", "success")
-    return redirect(url_for("index"))
+    return redirect(url_for("stock_list"))
 
 @app.route("/admin/import_produits", methods=["POST"])
 @role_required('owner','admin')
@@ -1030,15 +1105,19 @@ def admin_import_produits():
                 inserted += 1
     conn.commit()
     flash(f"Import terminé. {inserted} ajout(s), {updated} mise(s) à jour.", "success")
-    return redirect(url_for("index"))
+    return redirect(url_for("stock_list"))
 
 # -------- Gestion utilisateurs --------
 @app.route("/users")
 @role_required('owner','admin')
 def users_list():
+    page, per_page, offset = get_page_args()
     conn = get_db()
-    users = conn.execute("SELECT id, username, role FROM users ORDER BY role DESC, username").fetchall()
-    return render_template("users.html", users=users)
+    sql = "SELECT id, username, role FROM users ORDER BY role DESC, username"
+    count = conn.execute("SELECT COUNT(*) AS n FROM users").fetchone()["n"]
+    users = conn.execute(sql + " LIMIT ? OFFSET ?", (per_page, offset)).fetchall()
+    return render_template("users.html", users=users,
+                           page=page, per_page=per_page, total=count)
 
 @app.route("/users/new", methods=["GET","POST"])
 @role_required('owner','admin')

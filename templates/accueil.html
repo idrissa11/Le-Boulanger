@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="px-4 py-5 my-5 text-center">
+  <h1 class="display-5 fw-bold">Bienvenue, {{ session.user.username }} !</h1>
+  <div class="col-lg-6 mx-auto">
+    <p class="lead mb-4">Que souhaitez-vous faire aujourd'hui ?</p>
+  </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+  {% if session.user.role in ['owner','admin'] %}
+  <div class="col">
+    <a href="{{ url_for('dashboard') }}" class="card-link"><div class="card h-100 text-center p-3">
+      <div class="card-body"><h3>📊 Tableau de bord</h3><p class="small text-muted">Statistiques et indicateurs clés.</p></div>
+    </div></a>
+  </div>
+  {% endif %}
+
+  <div class="col">
+    <a href="{{ url_for('stock_list') }}" class="card-link"><div class="card h-100 text-center p-3">
+      <div class="card-body"><h3>📦 Stock</h3><p class="small text-muted">Gérer les produits et les quantités.</p></div>
+    </div></a>
+  </div>
+
+  <div class="col">
+    <a href="{{ url_for('ventes_list') }}" class="card-link"><div class="card h-100 text-center p-3">
+      <div class="card-body"><h3>🛒 Ventes</h3><p class="small text-muted">Enregistrer et consulter les ventes.</p></div>
+    </div></a>
+  </div>
+
+  <div class="col">
+    <a href="{{ url_for('clients_list') }}" class="card-link"><div class="card h-100 text-center p-3">
+      <div class="card-body"><h3>👥 Clients</h3><p class="small text-muted">Gérer le fichier client.</p></div>
+    </div></a>
+  </div>
+
+  <div class="col">
+    <a href="{{ url_for('fournisseurs_list') }}" class="card-link"><div class="card h-100 text-center p-3">
+      <div class="card-body"><h3>🚚 Fournisseurs</h3><p class="small text-muted">Gérer la liste des fournisseurs.</p></div>
+    </div></a>
+  </div>
+
+  {% if session.user.role in ['owner','admin'] %}
+  <div class="col">
+    <a href="{{ url_for('achats_list') }}" class="card-link"><div class="card h-100 text-center p-3">
+      <div class="card-body"><h3>📥 Achats</h3><p class="small text-muted">Suivre les entrées de stock.</p></div>
+    </div></a>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

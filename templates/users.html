@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="m-0">Utilisateurs</h2>
+  <a href="{{ url_for('users_new') }}" class="btn btn-success">➕ Nouvel utilisateur</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>#</th>
+        <th>Utilisateur</th>
+        <th>Rôle</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td>{{ u.username }}</td>
+        <td>{{ u.role }}</td>
+        <td class="text-end">
+          <a href="{{ url_for('users_edit', uid=u.id) }}" class="btn btn-sm btn-outline-primary" title="Modifier">✏️</a>
+          <form action="{{ url_for('users_reset_pw', uid=u.id) }}" method="post" class="d-inline" onsubmit="return confirm('Réinitialiser le mot de passe ?');">
+            <button class="btn btn-sm btn-outline-warning" title="Réinitialiser le mot de passe">🔑</button>
+          </form>
+          <form action="{{ url_for('users_delete', uid=u.id) }}" method="post" class="d-inline" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+            <button class="btn btn-sm btn-outline-danger" title="Supprimer">🗑️</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% include "_pagination.html" %}
+
+{% endblock %}

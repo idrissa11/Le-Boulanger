@@ -115,6 +115,8 @@
 </table>
 </div>
 
+{% include "_pagination.html" %}
+
 <script>
 function majPU(sel){const opt=sel.options[sel.selectedIndex];const tr=sel.closest('tr');const pu=tr.querySelector('input[name="pu[]"]'); if(opt&&opt.dataset.pu){pu.value=opt.dataset.pu;}}
 function supprimerLigne(btn){const tb=document.querySelector('#lignesTable tbody'); if(tb.rows.length>1) btn.closest('tr').remove();}
@@ -126,4 +128,3 @@ function ajouterLigne(){const tb=document.querySelector('#lignesTable tbody'); c
   tb.appendChild(clone);}
 </script>
 {% endblock %}
-

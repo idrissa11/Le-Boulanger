@@ -19,10 +19,11 @@
     <div class="collapse navbar-collapse" id="navbarsExample">
       {% if session.get('user') %}
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('accueil') }}">🏠 Accueil</a></li>
         {% if session.user.role in ['owner','admin'] %}
           <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Tableau de bord</a></li>
         {% endif %}
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Stock</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">📦 Stock</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('clients_list') }}">Clients</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('ventes_list') }}">Ventes</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('fournisseurs_list') }}">Fournisseurs</a></li>
@@ -72,6 +73,3 @@
 
 </body>
 </html>
-
-
-
