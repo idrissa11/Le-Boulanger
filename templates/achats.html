@@ -3,7 +3,7 @@
 
 {# En-tête: Titre + Actions + Filtres #}
 <div class="d-flex align-items-center justify-content-between mb-3">
-  <h2 class="m-0">Achats</h2>
+  <h2 class="m-0">Achats <span class="badge bg-secondary htmx-indicator">...</span></h2>
   <div class="d-flex align-items-center gap-2">
     <div class="dropdown">
       <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -23,11 +23,10 @@
 {% set filter_active = (q or date_from or date_to) %}
 <div class="collapse {% if filter_active %}show{% endif %}" id="filtersAchats">
   <div class="card card-body mb-3">
-    <form method="get" class="row g-2">
-      <div class="col-sm-5"><input class="form-control" name="q" placeholder="Fournisseur, paiement…" value="{{ q or '' }}"></div>
-      <div class="col-sm-3"><input class="form-control" type="date" name="date_from" value="{{ date_from or '' }}"></div>
-      <div class="col-sm-3"><input class="form-control" type="date" name="date_to" value="{{ date_to or '' }}"></div>
-      <div class="col-auto"><button class="btn btn-primary" type="submit">Appliquer</button></div>
+    <form hx-get="{{ url_for('achats_list') }}" hx-target="#achats-table-body" hx-swap="innerHTML" class="row g-2">
+      <div class="col-sm-5"><input class="form-control" name="q" placeholder="Fournisseur, paiement…" value="{{ q or '' }}" hx-trigger="keyup changed delay:500ms" hx-indicator=".htmx-indicator"></div>
+      <div class="col-sm-3"><input class="form-control" type="date" name="date_from" value="{{ date_from or '' }}" hx-trigger="keyup changed delay:500ms" hx-indicator=".htmx-indicator"></div>
+      <div class="col-sm-3"><input class="form-control" type="date" name="date_to" value="{{ date_to or '' }}" hx-trigger="keyup changed delay:500ms" hx-indicator=".htmx-indicator"></div>
       <div class="col-auto"><a class="btn btn-light" href="{{ url_for('achats_list') }}">Réinitialiser</a></div>
     </form>
   </div>
@@ -90,23 +89,8 @@
 <div class="table-responsive">
 <table class="table table-striped table-hover align-middle">
   <thead class="table-light"><tr><th>#</th><th>Date</th><th>Fournisseur</th><th class="text-end">Total HT</th><th class="text-end">TVA</th><th class="text-end">Total TTC</th><th>Paiement</th><th>Statut</th><th></th></tr></thead>
-  <tbody>
-    {% for a in achats %}
-    <tr>
-      <td>{{ a.id }}</td><td>{{ a.date }}</td><td>{{ a.fournisseur_nom or '—' }}</td>
-      <td class="text-end">{{ '%.2f'|format(a.total_ht) }}</td>
-      <td class="text-end">{{ '%.2f'|format(a.tva) }}</td>
-      <td class="text-end"><strong>{{ '%.2f'|format(a.total_ttc) }}</strong></td>
-      <td>{{ a.mode_paiement or '—' }}</td><td>{{ a.statut }}</td>
-      <td class="text-end">
-        {% if a.statut != 'annulé' %}
-        <form class="d-inline" action="{{ url_for('achat_annuler', achat_id=a.id) }}" method="post" onsubmit="return confirm('Annuler l\'achat et retirer les produits du stock ?');">
-          <button class="btn btn-sm btn-outline-danger" title="Annuler">↩️</button>
-        </form>
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
+  <tbody id="achats-table-body">
+    {% include 'achats_table.html' %}
   </tbody>
 </table>
 </div>

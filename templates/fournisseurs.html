@@ -2,7 +2,7 @@
 {% block content %}
 {# En-tête: Titre + Actions + Filtres #}
 <div class="d-flex align-items-center justify-content-between mb-3">
-  <h2 class="m-0">Fournisseurs</h2>
+  <h2 class="m-0">Fournisseurs <span class="badge bg-secondary htmx-indicator">...</span></h2>
   <div class="d-flex align-items-center gap-2">
     <div class="dropdown">
       <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -22,11 +22,10 @@
 {% set filter_active = q %}
 <div class="collapse {% if filter_active %}show{% endif %}" id="filtersFournisseurs">
   <div class="card card-body mb-3">
-    <form method="get" class="row g-2">
+    <form hx-get="{{ url_for('fournisseurs_list') }}" hx-target="#fournisseurs-table-body" hx-swap="innerHTML" class="row g-2">
       <div class="col-sm-8 col-md-6">
-        <input class="form-control" name="q" placeholder="Nom, contact, tél., email, ville" value="{{ q or '' }}">
+        <input class="form-control" name="q" placeholder="Nom, contact, tél., email, ville" value="{{ q or '' }}" hx-trigger="keyup changed delay:500ms" hx-indicator=".htmx-indicator">
       </div>
-      <div class="col-auto"><button class="btn btn-primary" type="submit">Appliquer</button></div>
       <div class="col-auto"><a class="btn btn-light" href="{{ url_for('fournisseurs_list') }}">Réinitialiser</a></div>
     </form>
   </div>
@@ -52,18 +51,8 @@
 <div class="table-responsive">
 <table class="table table-striped table-hover align-middle">
   <thead class="table-light"><tr><th>#</th><th>Nom</th><th>Contact</th><th>Téléphone</th><th>Email</th><th>Adresse</th><th>Ville</th><th></th></tr></thead>
-  <tbody>
-    {% for f in fournisseurs %}
-    <tr>
-      <td>{{ f.id }}</td><td>{{ f.nom }}</td><td>{{ f.contact }}</td><td>{{ f.telephone }}</td><td>{{ f.email }}</td><td>{{ f.adresse }}</td><td>{{ f.ville }}</td>
-      <td class="text-end">
-        <a href="{{ url_for('fournisseurs_modifier', fid=f.id) }}" class="btn btn-sm btn-outline-primary">✏️</a>
-        <form action="{{ url_for('fournisseurs_supprimer', fid=f.id) }}" method="post" class="d-inline" onsubmit="return confirm('Supprimer ?');">
-          <button class="btn btn-sm btn-outline-danger">🗑️</button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
+  <tbody id="fournisseurs-table-body">
+    {% include 'fournisseurs_table.html' %}
   </tbody>
 </table>
 </div>

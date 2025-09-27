@@ -353,6 +353,10 @@ def stock_list():
     count = conn.execute("SELECT COUNT(*) AS n FROM ("+sql+")", params).fetchone()["n"]
     produits = conn.execute(sql + " LIMIT ? OFFSET ?", params+[per_page, offset]).fetchall()
     is_vendor = session.get('user',{}).get('role') == 'vendeur'
+
+    if request.headers.get('HX-Request'):
+        return render_template("stock_table.html", produits=produits, hide_prix_achat=is_vendor)
+
     return render_template("stock.html", produits=produits, q=q, min_qte=min_qte,
                            page=page, per_page=per_page, total=count,
                            hide_prix_achat=is_vendor)
@@ -411,6 +415,10 @@ def clients_list():
     page, per_page, offset = get_page_args()
     count = conn.execute("SELECT COUNT(*) AS n FROM ("+sql+")", params).fetchone()["n"]
     clients = conn.execute(sql + " LIMIT ? OFFSET ?", params+[per_page, offset]).fetchall()
+
+    if request.headers.get('HX-Request'):
+        return render_template("clients_table.html", clients=clients)
+
     return render_template("clients.html", clients=clients, q=q,
                            page=page, per_page=per_page, total=count)
 
@@ -493,14 +501,20 @@ def ventes_list():
         sql += " AND (c.nom LIKE ? OR v.mode_paiement LIKE ?)"
         params += [like(q), like(q)]
     if d1:
-        sql += " AND date(v.date) >= date(?)"; params.append(d1)
+        sql += " AND date(v.date) >= date(?)"
+        params.append(d1)
     if d2:
-        sql += " AND date(v.date) <= date(?)"; params.append(d2)
+        sql += " AND date(v.date) <= date(?)"
+        params.append(d2)
     sql += " ORDER BY v.id DESC"
 
     page, per_page, offset = get_page_args()
     count = conn.execute("SELECT COUNT(*) AS n FROM ("+sql+")", params).fetchone()["n"]
     ventes = conn.execute(sql + " LIMIT ? OFFSET ?", params+[per_page, offset]).fetchall()
+
+    if request.headers.get('HX-Request'):
+        return render_template("ventes_table.html", ventes=ventes)
+
     return render_template("ventes.html", ventes=ventes, clients=clients, produits=produits,
                            q=q, date_from=d1 or "", date_to=d2 or "",
                            page=page, per_page=per_page, total=count)
@@ -673,6 +687,10 @@ def fournisseurs_list():
     page, per_page, offset = get_page_args()
     count = conn.execute("SELECT COUNT(*) AS n FROM ("+sql+")", params).fetchone()["n"]
     fournisseurs = conn.execute(sql + " LIMIT ? OFFSET ?", params+[per_page, offset]).fetchall()
+
+    if request.headers.get('HX-Request'):
+        return render_template("fournisseurs_table.html", fournisseurs=fournisseurs)
+
     return render_template("fournisseurs.html", fournisseurs=fournisseurs, q=q,
                            page=page, per_page=per_page, total=count)
 
@@ -757,14 +775,20 @@ def achats_list():
         sql += " AND (f.nom LIKE ? OR a.mode_paiement LIKE ?)"
         params += [like(q), like(q)]
     if d1:
-        sql += " AND date(a.date) >= date(?)"; params.append(d1)
+        sql += " AND date(a.date) >= date(?)"
+        params.append(d1)
     if d2:
-        sql += " AND date(a.date) <= date(?)"; params.append(d2)
+        sql += " AND date(a.date) <= date(?)"
+        params.append(d2)
     sql += " ORDER BY a.id DESC"
 
     page, per_page, offset = get_page_args()
     count = conn.execute("SELECT COUNT(*) AS n FROM ("+sql+")", params).fetchone()["n"]
     achats = conn.execute(sql + " LIMIT ? OFFSET ?", params+[per_page, offset]).fetchall()
+
+    if request.headers.get('HX-Request'):
+        return render_template("achats_table.html", achats=achats)
+
     return render_template("achats.html", achats=achats, fournisseurs=fournisseurs, produits=produits,
                            q=q, date_from=d1 or "", date_to=d2 or "",
                            page=page, per_page=per_page, total=count)
@@ -1118,6 +1142,10 @@ def users_list():
     sql = "SELECT id, username, role FROM users ORDER BY role DESC, username"
     count = conn.execute("SELECT COUNT(*) AS n FROM users").fetchone()["n"]
     users = conn.execute(sql + " LIMIT ? OFFSET ?", (per_page, offset)).fetchall()
+
+    if request.headers.get('HX-Request'):
+        return render_template("users_table.html", users=users)
+
     return render_template("users.html", users=users,
                            page=page, per_page=per_page, total=count)
 

@@ -1,0 +1,16 @@
+{% for a in achats %}
+<tr>
+    <td>{{ a.id }}</td><td>{{ a.date }}</td><td>{{ a.fournisseur_nom or '—' }}</td>
+    <td class="text-end">{{ '%.2f'|format(a.total_ht) }}</td>
+    <td class="text-end">{{ '%.2f'|format(a.tva) }}</td>
+    <td class="text-end"><strong>{{ '%.2f'|format(a.total_ttc) }}</strong></td>
+    <td>{{ a.mode_paiement or '—' }}</td><td>{{ a.statut }}</td>
+    <td class="text-end">
+    {% if a.statut != 'annulé' %}
+    <form class="d-inline" action="{{ url_for('achat_annuler', achat_id=a.id) }}" method="post" onsubmit="return confirm('Annuler l\'achat et retirer les produits du stock ?');">
+        <button class="btn btn-sm btn-outline-danger" title="Annuler">↩️</button>
+    </form>
+    {% endif %}
+    </td>
+</tr>
+{% endfor %}

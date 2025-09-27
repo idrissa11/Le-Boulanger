@@ -2,7 +2,7 @@
 {% block content %}
 {# En-tête: Titre + Actions + Filtres #}
 <div class="d-flex align-items-center justify-content-between mb-3">
-  <h2 class="m-0">Clients</h2>
+  <h2 class="m-0">Clients <span class="badge bg-secondary htmx-indicator">...</span></h2>
   <div class="d-flex align-items-center gap-2">
     <div class="dropdown">
       <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -22,11 +22,10 @@
 {% set filter_active = q %}
 <div class="collapse {% if filter_active %}show{% endif %}" id="filtersClients">
   <div class="card card-body mb-3">
-    <form method="get" class="row g-2">
+    <form hx-get="{{ url_for('clients_list') }}" hx-target="#clients-table-body" hx-swap="innerHTML" class="row g-2">
       <div class="col-sm-8 col-md-6">
-        <input class="form-control" name="q" placeholder="Nom, tél., email, entreprise, ville" value="{{ q or '' }}">
+        <input class="form-control" name="q" placeholder="Nom, tél., email, entreprise, ville" value="{{ q or '' }}" hx-trigger="keyup changed delay:500ms" hx-indicator=".htmx-indicator">
       </div>
-      <div class="col-auto"><button class="btn btn-primary" type="submit">Appliquer</button></div>
       <div class="col-auto"><a class="btn btn-light" href="{{ url_for('clients_list') }}">Réinitialiser</a></div>
     </form>
   </div>
@@ -54,23 +53,9 @@
   <thead class="table-light">
     <tr><th>#</th><th>Nom</th><th>Téléphone</th><th>Email</th><th>Entreprise</th><th>Adresse</th><th>Ville</th><th></th></tr>
   </thead>
-  <tbody>
-    {% for c in clients %}
-    <tr>
-      <td>{{ c.id }}</td><td>{{ c.nom }}</td><td>{{ c.telephone }}</td><td>{{ c.email }}</td>
-      <td>{{ c.entreprise }}</td><td>{{ c.adresse }}</td><td>{{ c.ville }}</td>
-      <td class="text-end">
-        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('clients_modifier', client_id=c.id) }}">✏️</a>
-        <form action="{{ url_for('clients_supprimer', client_id=c.id) }}" method="post" class="d-inline" onsubmit="return confirm('Supprimer ?');">
-          <button class="btn btn-sm btn-outline-danger">🗑️</button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
+  <tbody id="clients-table-body">
+    {% include 'clients_table.html' %}
   </tbody>
 </table>
 </div>
 {% endblock %}
-
-
-

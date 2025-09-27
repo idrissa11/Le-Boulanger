@@ -1,0 +1,16 @@
+{% for u in users %}
+<tr>
+    <td>{{ u.id }}</td>
+    <td>{{ u.username }}</td>
+    <td>{{ u.role }}</td>
+    <td class="text-end">
+        <a href="{{ url_for('users_edit', uid=u.id) }}" class="btn btn-sm btn-outline-primary" title="Modifier">✏️</a>
+        <form action="{{ url_for('users_reset_pw', uid=u.id) }}" method="post" class="d-inline" onsubmit="return confirm('Réinitialiser le mot de passe ?');">
+        <button class="btn btn-sm btn-outline-warning" title="Réinitialiser le mot de passe">🔑</button>
+        </form>
+        <form action="{{ url_for('users_delete', uid=u.id) }}" method="post" class="d-inline" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+        <button class="btn btn-sm btn-outline-danger" title="Supprimer">🗑️</button>
+        </form>
+    </td>
+</tr>
+{% endfor %}

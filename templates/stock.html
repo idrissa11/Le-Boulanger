@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Stock <span class="badge bg-secondary">{{ total }}</span></h1>
+    <h1>Stock <span class="badge bg-secondary htmx-indicator">...</span><span class="badge bg-secondary">{{ total }}</span></h1>
     <div>
         <a href="{{ url_for('export_produits_csv') }}" class="btn btn-sm btn-outline-secondary">Exporter CSV</a>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAjoutProduit">
@@ -14,15 +14,14 @@
 
 <div class="card mb-4">
     <div class="card-body">
-        <form method="get" action="{{ url_for('stock_list') }}" class="row g-3 align-items-center">
+        <form hx-get="{{ url_for('stock_list') }}" hx-target="#product-table-body" hx-swap="innerHTML" class="row g-3 align-items-center">
             <div class="col-md">
-                <input type="search" name="q" class="form-control" placeholder="Rechercher par nom, réf, catégorie..." value="{{ q or '' }}">
+                <input type="search" name="q" class="form-control" placeholder="Rechercher par nom, réf, catégorie..." value="{{ q or '' }}" hx-trigger="keyup changed delay:500ms" hx-indicator=".htmx-indicator">
             </div>
             <div class="col-md-2">
-                <input type="number" name="min_qte" class="form-control" placeholder="Qté min" value="{{ min_qte or '' }}">
+                <input type="number" name="min_qte" class="form-control" placeholder="Qté min" value="{{ min_qte or '' }}" hx-trigger="keyup changed delay:500ms" hx-indicator=".htmx-indicator">
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-secondary">Filtrer</button>
                 <a href="{{ url_for('stock_list') }}" class="btn btn-outline-secondary">Reset</a>
             </div>
         </form>
@@ -46,32 +45,8 @@
                 <th></th>
             </tr>
         </thead>
-        <tbody>
-            {% for p in produits %}
-            <tr>
-                <td>{{ p.id }}</td>
-                <td>{{ p.nom }}</td>
-                <td>{{ p.reference }}</td>
-                <td>{{ p.categorie }}</td>
-                <td>{{ p.marque }}</td>
-                {% if not hide_prix_achat %}
-                <td class="text-end">{{ "%.2f"|format(p.prix_achat) }}</td>
-                {% endif %}
-                <td class="text-end">{{ "%.2f"|format(p.prix_vente) }}</td>
-                <td class="text-end">{{ p.quantite }}</td>
-                <td class="text-end">
-                    {% if session.user.role in ['owner','admin'] %}
-                    <form action="{{ url_for('produits_supprimer', pid=p.id) }}" method="post" onsubmit="return confirm('Sûr ?');" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
-                    </form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="9" class="text-center">Aucun produit trouvé.</td>
-            </tr>
-            {% endfor %}
+        <tbody id="product-table-body">
+            {% include 'stock_table.html' %}
         </tbody>
     </table>
 </div>

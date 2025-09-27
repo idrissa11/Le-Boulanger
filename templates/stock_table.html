@@ -1,0 +1,25 @@
+{% for p in produits %}
+<tr>
+    <td>{{ p.id }}</td>
+    <td>{{ p.nom }}</td>
+    <td>{{ p.reference }}</td>
+    <td>{{ p.categorie }}</td>
+    <td>{{ p.marque }}</td>
+    {% if not hide_prix_achat %}
+    <td class="text-end">{{ "%.2f"|format(p.prix_achat) }}</td>
+    {% endif %}
+    <td class="text-end">{{ "%.2f"|format(p.prix_vente) }}</td>
+    <td class="text-end">{{ p.quantite }}</td>
+    <td class="text-end">
+        {% if session.user.role in ['owner','admin'] %}
+        <form action="{{ url_for('produits_supprimer', pid=p.id) }}" method="post" onsubmit="return confirm('Sûr ?');" class="d-inline">
+            <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+        </form>
+        {% endif %}
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td colspan="9" class="text-center">Aucun produit trouvé.</td>
+</tr>
+{% endfor %}

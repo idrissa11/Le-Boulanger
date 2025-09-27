@@ -1,0 +1,18 @@
+{% for v in ventes %}
+<tr>
+    <td>{{ v.id }}</td><td>{{ v.date }}</td><td>{{ v.client_nom or '—' }}</td>
+    <td class="text-end">{{ '%.2f'|format(v.total_ht) }}</td>
+    <td class="text-end">{{ '%.2f'|format(v.tva) }}</td>
+    <td class="text-end"><strong>{{ '%.2f'|format(v.total_ttc) }}</strong></td>
+    <td>{{ v.mode_paiement or '—' }}</td><td>{{ v.statut }}</td>
+    <td class="text-end">
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('vente_detail', vente_id=v.id) }}">👁️</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('facture_pdf', vente_id=v.id) }}">🧾</a>
+    {% if v.statut != 'annulé' %}
+    <form class="d-inline" action="{{ url_for('vente_annuler', vente_id=v.id) }}" method="post" onsubmit="return confirm('Annuler la vente et rétablir le stock ?');">
+        <button class="btn btn-sm btn-outline-danger" title="Annuler">↩️</button>
+    </form>
+    {% endif %}
+    </td>
+</tr>
+{% endfor %}

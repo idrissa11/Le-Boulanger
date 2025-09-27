@@ -1,0 +1,12 @@
+{% for c in clients %}
+<tr>
+    <td>{{ c.id }}</td><td>{{ c.nom }}</td><td>{{ c.telephone }}</td><td>{{ c.email }}</td>
+    <td>{{ c.entreprise }}</td><td>{{ c.adresse }}</td><td>{{ c.ville }}</td>
+    <td class="text-end">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('clients_modifier', client_id=c.id) }}">✏️</a>
+    <form action="{{ url_for('clients_supprimer', client_id=c.id) }}" method="post" class="d-inline" onsubmit="return confirm('Supprimer ?');">
+        <button class="btn btn-sm btn-outline-danger">🗑️</button>
+    </form>
+    </td>
+</tr>
+{% endfor %}
